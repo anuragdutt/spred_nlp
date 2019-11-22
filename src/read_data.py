@@ -3,14 +3,18 @@ import sys
 import numpy as np
 import pandas as pd
 import re
-
-
+from bs4 import BeautifulSoup
+import requests
+import pickle
+from time import sleep
+import datetime
+import unicodedata
 
 class extract8k(object):
 	def __init__(self, dt):
 		self.dt = dt
 
-	def filingExtractor(tickers):
+	def filingExtractor(self, cik, ticker):
 		try:
 			base_url = "https://www.sec.gov/cgi-bin/browse-edgar"
 			inputted_cik = cik
@@ -53,23 +57,84 @@ class extract8k(object):
 		return df
 
 
+	def extractText(self, link):
+		try:
+			r = requests.get(link)
+			#Parse 8-K document
+			filing = BeautifulSoup(r.content,"html5lib",from_encoding="ascii")
+			#Extract datetime
+			try:
+				submission_dt = filing.find("acceptance-datetime").string[:14]
+			except AttributeError:
+			        # Flag docs with missing data as May 1 2018 10AM
+				submission_dt = "20180501100000"
+
+			submission_dt = datetime.datetime.strptime(submission_dt,"%Y%m%d%H%M%S")
+			#Extract HTML sections
+			for section in filing.findAll("html"):
+			    #Remove tables
+				for table in section("table"):
+					table.decompose()
+			    #Convert to unicode
+				section = unicodedata.normalize("NFKD",section.text)
+				section = section.replace("\t"," ").replace("\n"," ").replace("/s"," ").replace("\'","'")
+			filing = "".join((section))
+		except requests.exceptions.ConnectionError:
+			sleep(10)
+		
+		sleep(.1)
+
+		return filing, submission_dt
+
+
 
 if __name__ == "__main__":
 
-	wiki_url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
-	cik_df = pd.read_html(wiki_url,header=[0],index_col=0)[0]
-	tickers = cik_df.index.drop_duplicates().values
-	print(tickers)
+	save_toggle = 1
+	pfn = "../data/pickles/df_sec_links.pickle"
+	dt = "20190501"
+	sec_ext = extract8k(dt)
 
-	# Get table of the S&P 500 tickers, CIK, and industry from Wikipedia
-	wiki_url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
-	cik_df = pd.read_html(wiki_url,header=0,index_col=0)[0]
-	cik_df['GICS Sector'] = cik_df['GICS Sector'].astype("category")
-	cik_df['GICS Sub Industry'] = cik_df['GICS Sector'].astype("category")
-	print(cik_df.shape)
-	print(cik_df.head())
+	if save_toggle == 0:
+
+		wiki_url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+		cik_df = pd.read_html(wiki_url,header=[0],index_col=0)[0]
+		tickers = cik_df.index.drop_duplicates().values
 
 
+		# Get table of the S&P 500 tickers, CIK, and industry from Wikipedia
+		wiki_url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+		cik_df = pd.read_html(wiki_url,header=0,index_col=0)[0]
+		cik_df['GICS Sector'] = cik_df['GICS Sector'].astype("category")
+		cik_df['GICS Sub Industry'] = cik_df['GICS Sector'].astype("category")
+		
+		cik_df['ticker'] = tickers
+		cik_df['symbol'] = cik_df.index.values
+		# cik_df = cik_df[:5]
+		# print(cik_df)
+
+
+		df_links = []
+
+		for index,row in cik_df.iterrows():
+			tick = row['ticker']
+			print(tick)
+			cik = row['CIK']
+			links = sec_ext.filingExtractor(cik, tick)
+			df_links.append(links)
+
+		fw = open(pfn, 'wb')
+		pickle.dump(df_links, fw)
+		fw.close()
+
+	with open(pfn, "rb") as fr:
+		df_links = pickle.load(fr)
+
+
+	for df in df_links:
+		txt = df['txt_link'].apply(sec_ext.extractText)
+		print(txt)
+		exit(0)
 
 # 	fn = "../data/tmp/AAPL.gz"
 # 	# with open(fn, 'rb') as f:
