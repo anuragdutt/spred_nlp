@@ -95,7 +95,7 @@ class extract8k(object):
 
 if __name__ == "__main__":
 
-	save_toggle = 1
+	save_toggle = 0
 	pfn = "../data/pickles/df_sec_links.pickle"
 	dt = "20190501"
 	
