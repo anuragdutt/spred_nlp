@@ -107,7 +107,7 @@ if __name__ == "__main__":
 	av_key = "E55HYR5EUPVPUEM8"
 	quandl_key = "Cx2sPMsEa2dsyyWyzN9y"
 
-	save_toggle = 1
+	save_toggle = 0
 	pfn = "../data/pickles/df_sec_links.pickle"
 	dt = "20190401"	
 	ptf = "../data/pickles/df_sec_text.pickle"
