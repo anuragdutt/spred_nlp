@@ -58,31 +58,41 @@ class extract8k(object):
 
 
 	def extractText(self, link):
-		try:
-			r = requests.get(link)
-			#Parse 8-K document
-			filing = BeautifulSoup(r.content,"html5lib",from_encoding="ascii")
-			#Extract datetime
-			try:
-				submission_dt = filing.find("acceptance-datetime").string[:14]
-			except AttributeError:
-			        # Flag docs with missing data as May 1 2018 10AM
-				submission_dt = "20190501100000"
-
-			submission_dt = datetime.datetime.strptime(submission_dt,"%Y%m%d%H%M%S")
-			#Extract HTML sections
-			for section in filing.findAll("html"):
-			    #Remove tables
-				for table in section("table"):
-					table.decompose()
-			    #Convert to unicode
-				section = unicodedata.normalize("NFKD",section.text)
-				section = section.replace("\t"," ").replace("\n"," ").replace("/s"," ").replace("\'","'")
-			filing = "".join((section))
-		except requests.exceptions.ConnectionError:
-			sleep(10)
 		
-		sleep(.1)
+		try_toggle = 1
+		count = 0
+		while try_toggle == 1 and count <= 10:
+			count =+ 1
+			try:
+				r = requests.get(link)
+				#Parse 8-K document
+				filing = BeautifulSoup(r.content,"html5lib",from_encoding="ascii")
+				#Extract datetime
+				try:
+					submission_dt = filing.find("acceptance-datetime").string[:14]
+				except AttributeError:
+				        # Flag docs with missing data as May 1 2018 10AM
+					submission_dt = "20190501100000"
+
+				submission_dt = datetime.datetime.strptime(submission_dt,"%Y%m%d%H%M%S")
+				#Extract HTML sections
+				for section in filing.findAll("html"):
+				    #Remove tables
+					for table in section("table"):
+						table.decompose()
+				    #Convert to unicode
+					section = unicodedata.normalize("NFKD",section.text)
+					section = section.replace("\t"," ").replace("\n"," ").replace("/s"," ").replace("\'","'")
+				filing = "".join((section))
+				try_toggle = 0
+			except requests.exceptions.ConnectionError:
+				try_toggle = 1
+				filing = ''
+				submission_dt = ''
+				sleep(10)
+
+
+			sleep(.1)
 
 		return filing, submission_dt
 
@@ -95,7 +105,7 @@ class extract8k(object):
 
 if __name__ == "__main__":
 
-	save_toggle = 0
+	save_toggle = 1
 	pfn = "../data/pickles/df_sec_links.pickle"
 	dt = "20190501"
 	
@@ -141,14 +151,14 @@ if __name__ == "__main__":
 	df_text = []
 
 	for df in df_links:
-		print(df['ticker'].unique())
+		print(df['ticker'].unique(), df.shape[0])
 		df['text'], df['release_date'] = zip(*df['txt_link'].apply(sec_ext.extractText))
 		df['items'] = df['text'].map(sec_ext.extractItemNo)
 		df_text.append(df)
 	
-	ffw = open(ptf, 'wb')
-	pickle.dump(df_text, ffw)
-	ffw.close()
+	# ffw = open(ptf, 'wb')
+	# pickle.dump(df_text, ffw)
+	# ffw.close()
 
 # 	fn = "../data/tmp/AAPL.gz"
 # 	# with open(fn, 'rb') as f:
