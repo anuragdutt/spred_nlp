@@ -67,7 +67,7 @@ class extract8k(object):
 				submission_dt = filing.find("acceptance-datetime").string[:14]
 			except AttributeError:
 			        # Flag docs with missing data as May 1 2018 10AM
-				submission_dt = "20180501100000"
+				submission_dt = "20190501100000"
 
 			submission_dt = datetime.datetime.strptime(submission_dt,"%Y%m%d%H%M%S")
 			#Extract HTML sections
@@ -86,6 +86,11 @@ class extract8k(object):
 
 		return filing, submission_dt
 
+	def extractItemNo(self, document):
+		pattern = re.compile("Item+ +\d+[\:,\.]+\d+\d")
+		item_list = re.findall(pattern,document)
+		return item_list
+
 
 
 if __name__ == "__main__":
@@ -93,6 +98,9 @@ if __name__ == "__main__":
 	save_toggle = 1
 	pfn = "../data/pickles/df_sec_links.pickle"
 	dt = "20190501"
+	
+	ptf = "../data/pickles/df_sec_text.pickle"
+
 	sec_ext = extract8k(dt)
 
 	if save_toggle == 0:
@@ -130,11 +138,17 @@ if __name__ == "__main__":
 	with open(pfn, "rb") as fr:
 		df_links = pickle.load(fr)
 
+	df_text = []
 
 	for df in df_links:
-		txt = df['txt_link'].apply(sec_ext.extractText)
-		print(txt)
-		exit(0)
+		print(df['ticker'].unique())
+		df['text'], df['release_date'] = zip(*df['txt_link'].apply(sec_ext.extractText))
+		df['items'] = df['text'].map(sec_ext.extractItemNo)
+		df_text.append(df)
+	
+	ffw = open(ptf, 'wb')
+	pickle.dump(df_text, ffw)
+	ffw.close()
 
 # 	fn = "../data/tmp/AAPL.gz"
 # 	# with open(fn, 'rb') as f:
