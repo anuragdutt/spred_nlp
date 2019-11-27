@@ -164,7 +164,7 @@ if __name__ == "__main__":
 	# count = 0
 	for df in df_links:
 		tick = df['ticker'].unique()[0]
-		print(tick)
+		print(tick, df.shape[0])
 		df['text'], df['release_date'] = zip(*df['txt_link'].apply(sec_ext.extractText))
 		df['items'] = df['text'].map(sec_ext.extractItemNo)
 		df[['price_change','vix']] = df[['ticker','release_date']].apply(fin_data.get_change,axis=1,broadcast=True)
