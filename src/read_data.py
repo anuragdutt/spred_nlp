@@ -175,7 +175,7 @@ if __name__ == "__main__":
 		tick_list = df['ticker'].unique()
 		if len(tick_list) > 0:
 			tick = tick_list[0]
-			if tick == 'ARE' or tick in file_existing:
+			if tick == 'ARE' or tick in file_existing or df.shape[0] < 40:
 				continue
 			else:
 				# df = df[:5]
