@@ -177,6 +177,7 @@ if __name__ == "__main__":
 			tick = tick_list[0]
 			if "." in tick:
 				tick = tick.replace('.', '_')
+				df['ticker'] = tick
 			if tick == 'ARE' or tick in file_existing or df.shape[0] < 40:
 				continue
 			else:
