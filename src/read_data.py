@@ -59,6 +59,7 @@ class extract8k(object):
 
 
 	def extractText(self, link):
+		print(link)
 		try_toggle = 1
 		count = 0
 		while try_toggle == 1 and count <= 10:
@@ -107,7 +108,7 @@ if __name__ == "__main__":
 	av_key = "E55HYR5EUPVPUEM8"
 	quandl_key = "Cx2sPMsEa2dsyyWyzN9y"
 
-	save_toggle = 0
+	save_toggle = 1
 	pfn = "../data/pickles/df_sec_links.pickle"
 	dt = "20190401"	
 	ptf = "../data/pickles/df_sec_text.pickle"
@@ -155,7 +156,7 @@ if __name__ == "__main__":
 
 	df_text = []
 
-	# df = df_links[17]
+	# df = df_links[17:18]
 	# print(df['ticker'].unique(), df.shape[0])
 	# df['text'], df['release_date'] = zip(*df['txt_link'].apply(sec_ext.extractText))
 	# df['items'] = df['text'].map(sec_ext.extractItemNo)
@@ -164,18 +165,21 @@ if __name__ == "__main__":
 	# count = 0
 	for df in df_links:
 		tick = df['ticker'].unique()[0]
-		print(tick, df.shape[0])
-		df['text'], df['release_date'] = zip(*df['txt_link'].apply(sec_ext.extractText))
-		df['items'] = df['text'].map(sec_ext.extractItemNo)
-		df[['price_change','vix']] = df[['ticker','release_date']].apply(fin_data.get_change,axis=1,broadcast=True)
-		df['rm_week'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="week",axis=1)
-		df['rm_month'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="month",axis=1)
-		df['rm_qtr'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="quarter",axis=1)
-		df['rm_year'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="year",axis=1)
-		fn = ''.join([tick, '.csv.gz'])
-		pn = os.path.join('../data/8k-gz/', fn)
-		df.to_csv(pn, compression = 'gzip')
-		df_text.append(df)
+		if tick == 'ARE':
+			continue
+		else:
+			print(tick, df.shape[0])
+			df['text'], df['release_date'] = zip(*df['txt_link'].apply(sec_ext.extractText))
+			df['items'] = df['text'].map(sec_ext.extractItemNo)
+			df[['price_change','vix']] = df[['ticker','release_date']].apply(fin_data.get_change,axis=1,broadcast=True)
+			df['rm_week'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="week",axis=1)
+			df['rm_month'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="month",axis=1)
+			df['rm_qtr'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="quarter",axis=1)
+			df['rm_year'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="year",axis=1)
+			fn = ''.join([tick, '.csv.gz'])
+			pn = os.path.join('../data/8k-gz/', fn)
+			df.to_csv(pn, compression = 'gzip')
+			df_text.append(df)
 		
 
 		# count = count + 1
