@@ -156,12 +156,16 @@ if __name__ == "__main__":
 
 	df_text = []
 
+
+
 	# df = df_links[17:18]
 	# print(df['ticker'].unique(), df.shape[0])
 	# df['text'], df['release_date'] = zip(*df['txt_link'].apply(sec_ext.extractText))
 	# df['items'] = df['text'].map(sec_ext.extractItemNo)
 	# print(df)
 	# exit(0)
+	
+
 	save_path = '../data/8k-gz/'
 	file_existing = [f.split('.')[0] for f in os.listdir(save_path) if os.path.isfile(os.path.join(save_path, f))]
 	print(file_existing)
@@ -176,29 +180,62 @@ if __name__ == "__main__":
 			else:
 				# df = df[:5]
 				print(tick, df.shape[0])
-				df['text'], df['release_date'] = zip(*df['txt_link'].apply(sec_ext.extractText))
-				df['items'] = df['text'].map(sec_ext.extractItemNo)
-				df[['price_change','vix']] = df[['ticker','release_date']].apply(fin_data.get_change,axis=1,broadcast=True)
-				df['rm_week'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="week",axis=1)
-				df['rm_month'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="month",axis=1)
-				df['rm_qtr'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="quarter",axis=1)
-				df['rm_year'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="year",axis=1)
-				fn = ''.join([tick, '.csv.gz'])
-				pn = os.path.join(save_path, fn)
-				df.to_csv(pn, compression = 'gzip')
-				df_text.append(df)
+				try:
+					df['text'], df['release_date'] = zip(*df['txt_link'].apply(sec_ext.extractText))
+					df['items'] = df['text'].map(sec_ext.extractItemNo)
+					df[['price_change','vix']] = df[['ticker','release_date']].apply(fin_data.get_change,axis=1,broadcast=True)
+					df['rm_week'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="week",axis=1)
+					df['rm_month'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="month",axis=1)
+					df['rm_qtr'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="quarter",axis=1)
+					df['rm_year'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="year",axis=1)
+					fn = ''.join([tick, '.csv.gz'])
+					pn = os.path.join(save_path, fn)
+					df.to_csv(pn, compression = 'gzip')
+					df_text.append(df)
+				except quandl.errors.quandl_error.NotFoundError:
+					print("Quandl error detected. Company code not found. Moving On.........")
+					continue
+
 		else:
 			continue
 		
+
+	# for df in df_links:
+	# 	tick_list = df['ticker'].unique()
+	# 	if len(tick_list) > 0:
+	# 		tick = tick_list[0]
+	# 		print(tick, df.shape[0])
+
+	# 		if tick in ['ANET', 'EBAY']:
+	# 			df = df[:5]
+	# 			try:
+	# 				df['text'], df['release_date'] = zip(*df['txt_link'].apply(sec_ext.extractText))
+	# 				df['items'] = df['text'].map(sec_ext.extractItemNo)
+	# 				df[['price_change','vix']] = df[['ticker','release_date']].apply(fin_data.get_change,axis=1,broadcast=True)
+	# 				df['rm_week'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="week",axis=1)
+	# 				df['rm_month'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="month",axis=1)
+	# 				df['rm_qtr'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="quarter",axis=1)
+	# 				df['rm_year'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="year",axis=1)
+	# 				fn = ''.join([tick, '.csv.gz'])
+	# 				pn = os.path.join(save_path, fn)
+	# 				df.to_csv(pn, compression = 'gzip')
+	# 				df_text.append(df)
+	# 			except quandl.errors.quandl_error.NotFoundError:
+	# 				continue
+	# 		else:
+	# 			continue
+	# 	else:
+	# 		continue
+
 
 		# count = count + 1
 		# if count >= 5:
 		# 	break
 
 
-	ffw = open(ptf, 'wb')
-	pickle.dump(df_text, ffw)
-	ffw.close()
+	# ffw = open(ptf, 'wb')
+	# pickle.dump(df_text, ffw)
+	# ffw.close()
 
 # 	fn = "../data/tmp/AAPL.gz"
 # 	# with open(fn, 'rb') as f:
