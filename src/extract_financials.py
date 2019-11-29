@@ -93,7 +93,7 @@ class FinDataExtractor:
     def get_av_data(self,ticker,start_date,end_date,market_open=False):
         start_date = start_date.date()
         end_date = end_date.date()
-
+        # date_range = pd.date_range(str(start_date), str(end_date), freq='D')[::-1]
         url = "https://www.alphavantage.co/query?"
         params = {"function":"TIME_SERIES_DAILY_ADJUSTED",
                   "symbol":ticker,
@@ -108,7 +108,9 @@ class FinDataExtractor:
                 price = av_df.loc[end_date:start_date,"adjusted_close"].mean()
             else:
                 price = av_df.loc[end_date:start_date,"open"].mean()
+
         except (KeyError,IndexError):
+            print("key error encountered")
             price = np.nan
         return price
 
@@ -128,6 +130,7 @@ class FinDataExtractor:
 
             price_before_release = self.get_quandl_data(ticker,start_date,start_date,market_open=False)
             price_after_release = self.get_quandl_data(ticker,end_date,end_date,market_open=True)
+
 
             index_before_release = self.get_index_price(start_date,start_date,market_open=False)
             index_after_release = self.get_index_price(end_date,end_date,market_open=True)
@@ -197,5 +200,10 @@ class FinDataExtractor:
 
 if __name__ == "__main__":
 
-	av_key1 = "E55HYR5EUPVPUEM8"
+	av_key = "E55HYR5EUPVPUEM8"
 	quandl_key = "Cx2sPMsEa2dsyyWyzN9y"
+	
+	# price = quandl.get('YAHOO/AMZN', start_date = '2018-03-01', end_data = '2018-03-02', authtoken=quandl_key)
+	# f = FinDataExtractor(quandl_key, av_key)
+	# price = f.get_av_data('AMZN',start_date = datetime.datetime.strptime('2019-03-31', '%Y-%m-%d'),end_date = datetime.datetime.strptime('2019-04-01', '%Y-%m-%d'),market_open = True)
+	# print(price)

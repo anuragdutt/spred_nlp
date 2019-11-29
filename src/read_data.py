@@ -108,9 +108,9 @@ if __name__ == "__main__":
 	av_key = "E55HYR5EUPVPUEM8"
 	quandl_key = "Cx2sPMsEa2dsyyWyzN9y"
 
-	save_toggle = 1
+	save_toggle = 0
 	pfn = "../data/pickles/df_sec_links.pickle"
-	dt = "20190401"	
+	dt = "20180401"	
 	ptf = "../data/pickles/df_sec_text.pickle"
 
 	sec_ext = extract8k(dt)
@@ -181,16 +181,19 @@ if __name__ == "__main__":
 			if tick == 'ARE' or tick in file_existing:
 				continue
 			else:
-				# df = df[:5]
+				df = df[:5]
 				print(tick, df.shape[0])
 				try:
 					df['text'], df['release_date'] = zip(*df['txt_link'].apply(sec_ext.extractText))
 					df['items'] = df['text'].map(sec_ext.extractItemNo)
+					# print(df['release_date'])
 					df[['price_change','vix']] = df[['ticker','release_date']].apply(fin_data.get_change,axis=1,broadcast=True)
 					df['rm_week'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="week",axis=1)
 					df['rm_month'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="month",axis=1)
 					df['rm_qtr'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="quarter",axis=1)
 					df['rm_year'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="year",axis=1)
+					# print(df['price_change'], df['vix'], df['rm_week'], df['rm_month'], df['rm_qtr'], df['rm_year'])
+					# exit(0)
 					fn = ''.join([tick, '.csv.gz'])
 					pn = os.path.join(save_path, fn)
 					df.to_csv(pn, compression = 'gzip')
