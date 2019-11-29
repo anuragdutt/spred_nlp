@@ -78,8 +78,14 @@ class extract8k(object):
 					submission_dt = filing.find("acceptance-datetime").string[:14]
 				except AttributeError:
 				        # Flag docs with missing data as May 1 2018 10AM
-					submission_dt = "20180401100000"
-				submission_dt = datetime.datetime.strptime(submission_dt,"%Y%m%d%H%M%S")
+					submission_dt = "20180401000000"
+					print(submission_dt)
+				try:
+					submission_dt = datetime.datetime.strptime(submission_dt,"%Y%m%d%H%M%S")
+				except ValueError:
+						submission_dt = "20180401000000"
+						print(submission_dt)
+					
 				#Extract HTML sections
 				for section in filing.findAll("html"):
 				    #Remove tables
@@ -113,7 +119,7 @@ if __name__ == "__main__":
 	av_key = "E55HYR5EUPVPUEM8"
 	quandl_key = "Cx2sPMsEa2dsyyWyzN9y"
 
-	save_toggle = 0
+	save_toggle = 1
 	pfn = "../data/pickles/df_sec_links.pickle"
 	dt = "20180401"	
 	ptf = "../data/pickles/df_sec_text.pickle"
@@ -217,8 +223,8 @@ if __name__ == "__main__":
 	# 		tick = tick_list[0]
 	# 		print(tick, df.shape[0])
 
-	# 		if tick in ['ANET', 'EBAY']:
-	# 			df = df[:5]
+	# 		if tick in ['ADBE']:
+	# 			# df = df[:5]
 	# 			try:
 	# 				df['text'], df['release_date'] = zip(*df['txt_link'].apply(sec_ext.extractText))
 	# 				df['items'] = df['text'].map(sec_ext.extractItemNo)
