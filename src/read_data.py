@@ -181,7 +181,7 @@ if __name__ == "__main__":
 			if tick == 'ARE' or tick in file_existing:
 				continue
 			else:
-				df = df[:5]
+				# df = df[:5]
 				print(tick, df.shape[0])
 				try:
 					df['text'], df['release_date'] = zip(*df['txt_link'].apply(sec_ext.extractText))
