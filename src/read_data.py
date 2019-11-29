@@ -12,8 +12,9 @@ import unicodedata
 from extract_financials import *
 
 class extract8k(object):
-	def __init__(self, dt):
+	def __init__(self, dt, count):
 		self.dt = dt
+		self.count = count
 
 	def filingExtractor(self, cik, ticker):
 		try:
@@ -24,7 +25,7 @@ class extract8k(object):
 				"CIK" : inputted_cik,
 				"type" : "8-K",
 				"output":"xml",
-				"count": "80",
+				"count": str(count),
 				"dateb" : self.dt,
 			}
 
@@ -32,7 +33,7 @@ class extract8k(object):
 
 			soup = BeautifulSoup(sec_response.text,'lxml')
 			url_list = soup.findAll('filinghref')
-			
+
 			html_list = []
             # Get html version of links
 			for link in url_list:
@@ -78,13 +79,11 @@ class extract8k(object):
 					submission_dt = filing.find("acceptance-datetime").string[:14]
 				except AttributeError:
 				        # Flag docs with missing data as May 1 2018 10AM
-					submission_dt = "20180401000000"
+					submission_dt = "20180410100000"
+									# "20180315160922"
 					print(submission_dt)
-				try:
-					submission_dt = datetime.datetime.strptime(submission_dt,"%Y%m%d%H%M%S")
-				except ValueError:
-						submission_dt = "20180401000000"
-						print(submission_dt)
+					
+				submission_dt = datetime.datetime.strptime(submission_dt,"%Y%m%d%H%M%S")
 					
 				#Extract HTML sections
 				for section in filing.findAll("html"):
@@ -119,12 +118,13 @@ if __name__ == "__main__":
 	av_key = "E55HYR5EUPVPUEM8"
 	quandl_key = "Cx2sPMsEa2dsyyWyzN9y"
 
-	save_toggle = 1
+	save_toggle = 0
 	pfn = "../data/pickles/df_sec_links.pickle"
 	dt = "20180401"	
+	count = 40
 	ptf = "../data/pickles/df_sec_text.pickle"
 
-	sec_ext = extract8k(dt)
+	sec_ext = extract8k(dt, count)
 	fin_data = FinDataExtractor(quandl_key,av_key)
 
 	chunksize = 50
