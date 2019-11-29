@@ -73,7 +73,7 @@ class extract8k(object):
 					submission_dt = filing.find("acceptance-datetime").string[:14]
 				except AttributeError:
 				        # Flag docs with missing data as May 1 2018 10AM
-					submission_dt = "20190501100000"
+					submission_dt = "20180401100000"
 				submission_dt = datetime.datetime.strptime(submission_dt,"%Y%m%d%H%M%S")
 				#Extract HTML sections
 				for section in filing.findAll("html"):
