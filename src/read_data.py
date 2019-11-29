@@ -116,9 +116,10 @@ class extract8k(object):
 if __name__ == "__main__":
 
 	av_key = "E55HYR5EUPVPUEM8"
-	quandl_key = "Cx2sPMsEa2dsyyWyzN9y"
+	# quandl_key = "Cx2sPMsEa2dsyyWyzN9y"
+	quandl_key = "WYd_zMt6LHmg_Y1HZqPC"
 
-	save_toggle = 0
+	save_toggle = 1
 	pfn = "../data/pickles/df_sec_links.pickle"
 	dt = "20180401"	
 	count = 40
@@ -189,7 +190,7 @@ if __name__ == "__main__":
 			if "." in tick:
 				tick = tick.replace('.', '_')
 				df['ticker'] = tick
-			if tick == 'ARE' or tick in file_existing:
+			if tick in ['ARE', 'ANET', 'BRK'] or tick in file_existing:
 				continue
 			else:	
 				# df = df[:5]
