@@ -24,11 +24,15 @@ class extract8k(object):
 				"CIK" : inputted_cik,
 				"type" : "8-K",
 				"output":"xml",
+				"count": "80",
 				"dateb" : self.dt,
 			}
+
 			sec_response = requests.get(url=base_url,params=payload)
+
 			soup = BeautifulSoup(sec_response.text,'lxml')
 			url_list = soup.findAll('filinghref')
+			
 			html_list = []
             # Get html version of links
 			for link in url_list:
@@ -37,6 +41,7 @@ class extract8k(object):
 					txtlink = link + "l"
 					html_list.append(txtlink)
 
+			print(len(html_list))		
 			doc_list = []
 			doc_name_list = []
            	# Get links for txt versions of files
