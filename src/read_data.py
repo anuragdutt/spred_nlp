@@ -180,7 +180,7 @@ if __name__ == "__main__":
 				df['ticker'] = tick
 			if tick == 'ARE' or tick in file_existing:
 				continue
-			else:
+			else:	
 				# df = df[:5]
 				print(tick, df.shape[0])
 				try:
@@ -192,7 +192,7 @@ if __name__ == "__main__":
 					df['rm_month'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="month",axis=1)
 					df['rm_qtr'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="quarter",axis=1)
 					df['rm_year'] = df[['ticker','release_date']].apply(fin_data.get_historical_movements,period="year",axis=1)
-					# print(df['price_change'], df['vix'], df['rm_week'], df['rm_month'], df['rm_qtr'], df['rm_year'])
+					print(df.loc[:, ['release_date', 'price_change', 'vix', 'rm_week','rm_month','rm_qtr','rm_year']])
 					# exit(0)
 					fn = ''.join([tick, '.csv.gz'])
 					pn = os.path.join(save_path, fn)
