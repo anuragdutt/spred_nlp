@@ -196,7 +196,7 @@ if __name__ == "__main__":
 					# exit(0)
 					fn = ''.join([tick, '.csv.gz'])
 					pn = os.path.join(save_path, fn)
-					df.to_csv(pn, compression = 'gzip')
+					df.to_csv(pn, compression = 'gzip', index = False)
 					df_text.append(df)
 				except quandl.errors.quandl_error.NotFoundError:
 					print("Quandl error detected. Company code not found. Moving On.........")
