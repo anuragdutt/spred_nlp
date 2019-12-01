@@ -116,8 +116,8 @@ class extract8k(object):
 if __name__ == "__main__":
 
 	av_key = "E55HYR5EUPVPUEM8"
-	quandl_key = "Cx2sPMsEa2dsyyWyzN9y"
-	# quandl_key = "WYd_zMt6LHmg_Y1HZqPC"
+	# quandl_key = "Cx2sPMsEa2dsyyWyzN9y"
+	quandl_key = "WYd_zMt6LHmg_Y1HZqPC"
 
 	save_toggle = 1
 	pfn = "../data/pickles/df_sec_links.pickle"
