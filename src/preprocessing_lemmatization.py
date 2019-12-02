@@ -55,27 +55,35 @@ def dask_tokenizer(df):
 
 if __name__ == "__main__":
 
-	count = 0
-	f = pd.read_csv("../data/8k-gz/AAPL.csv.gz", compression = "gzip")
-	col = f.columns.tolist()
-	col.extend(['signal'])
-	dat = pd.DataFrame(columns = col)
+    count = 0
+    f = pd.read_csv("../data/8k-gz/AAPL.csv.gz", compression = "gzip")
+    col = f.columns.tolist()
+    col.extend(['signal'])
+    dat = pd.DataFrame(columns = col)
 
-	lemmatize_dat = []
 
-	for f in os.listdir("../data/8k-gz"):
-		df = pd.read_csv(os.path.join('../data/8k-gz', f), compression = "gzip")
-		print(df['ticker'].unique())
 
-		df["signal"] = df['price_change'].map(lambda x: "stay" if -1<x<1 else ("up" if x>1 else "down"))
-		ldf = dask_tokenizer(df)
-		dat = dat.append(ldf)
-		lemmatize_dat.append(dat)
+    lemmatize_dat = []
 
-		count = count + 1
-		if count == 3:
+    for f in os.listdir("../data/8k-gz"):
+        df = pd.read_csv(os.path.join('../data/8k-gz', f), compression = "gzip")
 
-			with open("../data/pickles/lemmatized_data.pickle", "wb") as fwrite:
-				pickle.dump(lemmatize_dat, fwrite)
-				fwrite.close()
-			exit(0)
+        print(df['ticker'].unique())
+
+        df["signal"] = df['price_change'].map(lambda x: "stay" if -1<x<1 else ("up" if x>1 else "down"))
+        ldf = dask_tokenizer(df)
+        dat = dat.append(ldf)
+        lemmatize_dat.append(dat)
+
+        count = count + 1
+
+        # if count == 3:
+        #     break
+
+
+    with open("../data/pickles/lemmatized_data.pickle", "wb") as fwrite:
+        pickle.dump(lemmatize_dat, fwrite)
+        fwrite.close()
+
+    dat.to_csv("../data/main_data.csv.gz", compression="gzip", index = False)
+			# exit(0)
