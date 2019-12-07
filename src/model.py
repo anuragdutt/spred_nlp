@@ -286,13 +286,13 @@ if __name__ == "__main__":
 	model_dict = dict()
 
 
-	mlp = build_model(3,"mlp", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
-	print("mlp.......................................................")
-	model_dict["mlp"] = mlp.fit([docs_train,X_train],y_train,batch_size=4,epochs=25,verbose=1) 
+	# mlp = build_model(3,"mlp", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
+	# print("mlp.......................................................")
+	# model_dict["mlp"] = mlp.fit([docs_train,X_train],y_train,batch_size=4,epochs=25,verbose=1) 
 
-	mlp.save("../data/models/mlp.hdf5")
-	# with open('../data/train_history/mlp.pkl', 'wb') as file_pi:
-	    # pickle.dump(model_dict["mlp"], file_pi)
+	# mlp.save("../data/models/mlp.hdf5")
+	# # with open('../data/train_history/mlp.pkl', 'wb') as file_pi:
+	#     # pickle.dump(model_dict["mlp"], file_pi)
 
 
 
