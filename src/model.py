@@ -213,11 +213,12 @@ if __name__ == "__main__":
 	# print("******************************************************")
 
 	df = pd.read_csv("../data/embedded_data/main_data_3.csv.gz", compression = "gzip")
-	# df = df.loc[:2000]
-	df.to_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip", index = False)
-	df = pd.read_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip")
+	# df = df.loc[:200]
+	# df.to_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip", index = False)
+	# df = pd.read_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip")
 	df = df.dropna()
 	print(df.shape)
+	# exit(0)
 
 	df = pd.merge(df, cik_df, on = "cik", how = "left")
 
@@ -286,8 +287,8 @@ if __name__ == "__main__":
 
 
 	mlp = build_model(3,"mlp", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
-
-	model_dict["mlp"] = mlp.fit([docs_train,X_train],y_train,batch_size=64,epochs=20,verbose=1) 
+	print("nlp.......................................................")
+	model_dict["mlp"] = mlp.fit([docs_train,X_train],y_train,batch_size=32,epochs=50,verbose=1) 
 
 	mlp.save("../data/models/mlp.hdf5")
 	# with open('../data/train_history/mlp.pkl', 'wb') as file_pi:
@@ -296,26 +297,26 @@ if __name__ == "__main__":
 
 
 	rnn = build_model(3,"rnn", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
-
-	model_dict["rnn"] = rnn.fit([docs_train,X_train],y_train,batch_size=64,epochs=20,verbose=1)
+	print("rnn.......................................................")
+	model_dict["rnn"] = rnn.fit([docs_train,X_train],y_train,batch_size=32,epochs=50,verbose=1)
 
 	rnn.save("../data/models/rnn.hdf5")
 	# with open('../data/train_history/rnn.pkl', 'wb') as file_pi:
 	#     pickle.dump(model_dict["rnn"].history, file_pi)
 
 	cnn = build_model(3,"cnn", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
-
-
-	model_dict["cnn"] = cnn.fit([docs_train,X_train],y_train,batch_size=64,epochs=20,verbose=1)
+	print("cnn.......................................................")
+	model_dict["cnn"] = cnn.fit([docs_train,X_train],y_train,batch_size=32,epochs=50,verbose=1)
 
 	cnn.save("../data/models/cnn.hdf5")
 	# with open('..d/data/train_history/cnn.pkl', 'wb') as file_pi:
 	#     pickle.dump(model_dict["cnn"].history, file_pi)
 
 
-	rnn_cnn = build_model(3,"rnn_cnn", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
 
-	model_dict["rnn_cnn"] = rnn_cnn.fit([docs_train,X_train],y_train,batch_size=64,epochs=20,verbose=1)
+	rnn_cnn = build_model(3,"rnn_cnn", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
+	print("rnn_cnn.......................................................")
+	model_dict["rnn_cnn"] = rnn_cnn.fit([docs_train,X_train],y_train,batch_size=32,epochs=50,verbose=1)
 
 	rnn_cnn.save("../data/models/rnn_cnn.hdf5")
 	# with open('Data/train_history/rnn_cnn.pkl', 'wb') as file_pi:
