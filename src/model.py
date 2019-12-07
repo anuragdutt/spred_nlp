@@ -127,7 +127,7 @@ def build_model(output_classes,architecture,embedding_matrix,aux_shape,vocab_siz
         #model.add(Dense(output_classes, activation='softmax'))
     elif architecture == 'rnn':
         # LSTM network
-        main = Bidirectional(CuDNNGRU(64, return_sequences=False),merge_mode='concat')(main)
+        main = Bidirectional(CuDNNGRU(32, return_sequences=False),merge_mode='concat')(main)
         main = BatchNormalization()(main)
     elif architecture =="rnn_cnn":
         main = Conv1D(64, 5, padding='same', activation='relu')(main)
@@ -212,10 +212,12 @@ if __name__ == "__main__":
 	# df = pd.read_pickle("../data/pickles/lemmatized_data.pickle")
 	# print("******************************************************")
 
-	# df = pd.read_csv("../data/embedded_data/main_data_3.csv.gz", compression = "gzip")
-	# df = df.loc[:100]
-	# df.to_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip", index = False)
+	df = pd.read_csv("../data/embedded_data/main_data_3.csv.gz", compression = "gzip")
+	# df = df.loc[:2000]
+	df.to_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip", index = False)
 	df = pd.read_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip")
+	df = df.dropna()
+	print(df.shape)
 
 	df = pd.merge(df, cik_df, on = "cik", how = "left")
 
@@ -288,36 +290,36 @@ if __name__ == "__main__":
 	model_dict["mlp"] = mlp.fit([docs_train,X_train],y_train,batch_size=64,epochs=10,verbose=1) 
 
 	mlp.save("../data/models/mlp.hdf5")
-	with open('../data/train_history/mlp.pkl', 'wb') as file_pi:
-	    pickle.dump(model_dict["mlp"], file_pi)
+	# with open('../data/train_history/mlp.pkl', 'wb') as file_pi:
+	    # pickle.dump(model_dict["mlp"], file_pi)
 
 
 
-	rnn = build_model(3,"rnn")
+	rnn = build_model(3,"rnn", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
 
-	model_dict["rnn"] = rnn.fit([docs_train,X_train],y_train,batch_size=32,epochs=10,verbose=1)
+	model_dict["rnn"] = rnn.fit([docs_train,X_train],y_train,batch_size=64,epochs=10,verbose=1)
 
 	rnn.save("../data/models/rnn.hdf5")
-	with open('../data/train_history/rnn.pkl', 'wb') as file_pi:
-	    pickle.dump(model_dict["rnn"].history, file_pi)
+	# with open('../data/train_history/rnn.pkl', 'wb') as file_pi:
+	#     pickle.dump(model_dict["rnn"].history, file_pi)
 
-	cnn = build_model(3,"cnn")
+	cnn = build_model(3,"cnn", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
 
 
 	model_dict["cnn"] = cnn.fit([docs_train,X_train],y_train,batch_size=64,epochs=10,verbose=1)
 
 	cnn.save("../data/models/cnn.hdf5")
-	with open('..d/data/train_history/cnn.pkl', 'wb') as file_pi:
-	    pickle.dump(model_dict["cnn"].history, file_pi)
+	# with open('..d/data/train_history/cnn.pkl', 'wb') as file_pi:
+	#     pickle.dump(model_dict["cnn"].history, file_pi)
 
 
-	rnn_cnn = build_model(3,"rnn_cnn")
+	rnn_cnn = build_model(3,"rnn_cnn", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
 
 	model_dict["rnn_cnn"] = rnn_cnn.fit([docs_train,X_train],y_train,batch_size=32,epochs=10,verbose=1)
 
-	rnn_cnn.save("Data/models/rnn_cnn.hdf5")
-	with open('Data/train_history/rnn_cnn.pkl', 'wb') as file_pi:
-	    pickle.dump(model_dict["rnn_cnn"].history, file_pi)
+	rnn_cnn.save("../data/models/rnn_cnn.hdf5")
+	# with open('Data/train_history/rnn_cnn.pkl', 'wb') as file_pi:
+	#     pickle.dump(model_dict["rnn_cnn"].history, file_pi)
 
 
 	exit(0)
