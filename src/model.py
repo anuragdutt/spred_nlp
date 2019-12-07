@@ -287,7 +287,7 @@ if __name__ == "__main__":
 
 	mlp = build_model(3,"mlp", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
 
-	model_dict["mlp"] = mlp.fit([docs_train,X_train],y_train,batch_size=64,epochs=10,verbose=1) 
+	model_dict["mlp"] = mlp.fit([docs_train,X_train],y_train,batch_size=64,epochs=20,verbose=1) 
 
 	mlp.save("../data/models/mlp.hdf5")
 	# with open('../data/train_history/mlp.pkl', 'wb') as file_pi:
@@ -297,7 +297,7 @@ if __name__ == "__main__":
 
 	rnn = build_model(3,"rnn", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
 
-	model_dict["rnn"] = rnn.fit([docs_train,X_train],y_train,batch_size=64,epochs=10,verbose=1)
+	model_dict["rnn"] = rnn.fit([docs_train,X_train],y_train,batch_size=64,epochs=20,verbose=1)
 
 	rnn.save("../data/models/rnn.hdf5")
 	# with open('../data/train_history/rnn.pkl', 'wb') as file_pi:
@@ -306,7 +306,7 @@ if __name__ == "__main__":
 	cnn = build_model(3,"cnn", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
 
 
-	model_dict["cnn"] = cnn.fit([docs_train,X_train],y_train,batch_size=64,epochs=10,verbose=1)
+	model_dict["cnn"] = cnn.fit([docs_train,X_train],y_train,batch_size=64,epochs=20,verbose=1)
 
 	cnn.save("../data/models/cnn.hdf5")
 	# with open('..d/data/train_history/cnn.pkl', 'wb') as file_pi:
@@ -315,7 +315,7 @@ if __name__ == "__main__":
 
 	rnn_cnn = build_model(3,"rnn_cnn", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
 
-	model_dict["rnn_cnn"] = rnn_cnn.fit([docs_train,X_train],y_train,batch_size=32,epochs=10,verbose=1)
+	model_dict["rnn_cnn"] = rnn_cnn.fit([docs_train,X_train],y_train,batch_size=64,epochs=20,verbose=1)
 
 	rnn_cnn.save("../data/models/rnn_cnn.hdf5")
 	# with open('Data/train_history/rnn_cnn.pkl', 'wb') as file_pi:
