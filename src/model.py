@@ -41,7 +41,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.preprocessing import StandardScaler
 
-
+global aux_shape
+global vocab_size  
+global embed_dim
+global max_words
 
 def load_embeddings(vec_file):
     print("Loading Glove Model")
@@ -98,7 +101,7 @@ def auc_roc(y_true, y_pred):
         value = tf.identity(value)
         return value
 
-def build_model(output_classes,architecture,aux_shape=aux_shape,vocab_size=vocab_size,embed_dim=embed_dim,embedding_matrix=embedding_matrix,max_seq_len=max_words):
+def build_model(output_classes,architecture,embedding_matrix,aux_shape,vocab_size,embed_dim,max_seq_len):
     
     with tf.device('/cpu:0'):
         main_input= Input(shape=(max_seq_len,),name='doc_input')
@@ -146,7 +149,7 @@ def build_model(output_classes,architecture,aux_shape=aux_shape,vocab_size=vocab
     model = Model(inputs=[main_input, auxiliary_input], outputs=[main_output],name=architecture)
         
     #sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    model = multi_gpu_model(model)
+    # model = multi_gpu_model(model)
     model.compile('adam', 'categorical_crossentropy',metrics=['accuracy',auc_roc])
     
     return model
@@ -176,13 +179,46 @@ def gen():
         idx += 1
 
 
+
+def plot_metrics(model_dict,metric,x_label,y_label):
+    plots = 1
+    plt.figure(figsize=[15,10])
+    for model, history in model_dict.items():
+        plt.subplot(2,2,plots)
+        plt.plot(history[metric])
+        #plt.plot(history.history['val_acc'])
+        plt.title('{0} {1}'.format(model,metric))
+        plt.ylabel(y_label)
+        plt.xlabel(x_label)
+        plots += 1
+    #plt.legend(['train', 'test'], loc='upper left')
+    plt.tight_layout()
+    plt.savefig("Graphs/{}.png".format(metric),format="png")
+    plt.show()
+
 if __name__ == "__main__":
 
 	max_words = 34603
 	embed_dim = 100
 
+	wiki_url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+	cik_df = pd.read_html(wiki_url,header=0,index_col=0)[0]
+	cik_df['GICS Sector'] = cik_df['GICS Sector'].astype("category")
+	cik_df['GICS Sub Industry'] = cik_df['GICS Sector'].astype("category")
+
+	cik_df = cik_df.loc[:, ['CIK', 'GICS Sector', 'GICS Sub Industry']]
+	cik_df.columns = ['cik', 'GICS Sector', 'GICS Sub Industry']
+
 	# df = pd.read_pickle("../data/pickles/lemmatized_data.pickle")
 	# print("******************************************************")
+
+	# df = pd.read_csv("../data/embedded_data/main_data_3.csv.gz", compression = "gzip")
+	# df = df.loc[:100]
+	# df.to_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip", index = False)
+	df = pd.read_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip")
+
+	df = pd.merge(df, cik_df, on = "cik", how = "left")
+
 
 	mlb = MultiLabelBinarizer()
 	df = df.join(pd.DataFrame(mlb.fit_transform(df.pop('items')),columns=mlb.classes_,),sort=False,how="left")
@@ -193,11 +229,13 @@ if __name__ == "__main__":
 	docs = df['processed_text']
 	y = df['signal']	
 
+
 	# Get Dummies
 
 	docs = tokenize_and_pad(docs)
 	X = pd.get_dummies(columns = ['GICS Sector'],prefix="sector",data=X)
 	y = pd.get_dummies(columns=['signal'],data=y)
+
 
 	aux_shape = len(X.columns)
 	X_train, X_test, y_train, y_test, docs_train, docs_test = train_test_split(X, y,docs,
@@ -216,16 +254,19 @@ if __name__ == "__main__":
 	embeddings_index = load_embeddings("../data/glove/glove.6B.100d.txt")
 	words_not_found = []
 
+
 	embedding_matrix = np.zeros((vocab_size, embed_dim))
 	for word, i in t.word_index.items():
-    	embedding_vector = embeddings_index.get(word)
-	    if embedding_vector is not None:
-	        # words not found in embedding index will be all-zeros.
-	        embedding_matrix[i] = embedding_vector
-	    else:
-	        words_not_found.append(word)
+		embedding_vector = embeddings_index.get(word)
+		if embedding_vector is not None:
+		    # words not found in embedding index will be all-zeros.
+		    embedding_matrix[i] = embedding_vector
+		else:
+		    words_not_found.append(word)
 
 	print('number of null word embeddings: %d' % np.sum(np.sum(embedding_matrix, axis=1) == 0))
+
+
 
 	# Save data
 	np.save("../data/pickles/docs_train.npy",docs_train)
@@ -239,13 +280,17 @@ if __name__ == "__main__":
 
 	np.save("../data/pickles/embedding_matrix.npy",embedding_matrix)
 
-	mlp = build_model(3,"mlp")
+	model_dict = dict()
+
+
+	mlp = build_model(3,"mlp", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
 
 	model_dict["mlp"] = mlp.fit([docs_train,X_train],y_train,batch_size=64,epochs=10,verbose=1) 
 
 	mlp.save("../data/models/mlp.hdf5")
-	with open('../data/trainHistory/mlp.pkl', 'wb') as file_pi:
+	with open('../data/train_history/mlp.pkl', 'wb') as file_pi:
 	    pickle.dump(model_dict["mlp"], file_pi)
+
 
 
 	rnn = build_model(3,"rnn")
@@ -253,7 +298,7 @@ if __name__ == "__main__":
 	model_dict["rnn"] = rnn.fit([docs_train,X_train],y_train,batch_size=32,epochs=10,verbose=1)
 
 	rnn.save("../data/models/rnn.hdf5")
-	with open('../data/trainHistory/rnn.pkl', 'wb') as file_pi:
+	with open('../data/train_history/rnn.pkl', 'wb') as file_pi:
 	    pickle.dump(model_dict["rnn"].history, file_pi)
 
 	cnn = build_model(3,"cnn")
@@ -262,7 +307,7 @@ if __name__ == "__main__":
 	model_dict["cnn"] = cnn.fit([docs_train,X_train],y_train,batch_size=64,epochs=10,verbose=1)
 
 	cnn.save("../data/models/cnn.hdf5")
-	with open('..d/data/trainHistory/cnn.pkl', 'wb') as file_pi:
+	with open('..d/data/train_history/cnn.pkl', 'wb') as file_pi:
 	    pickle.dump(model_dict["cnn"].history, file_pi)
 
 
@@ -271,9 +316,11 @@ if __name__ == "__main__":
 	model_dict["rnn_cnn"] = rnn_cnn.fit([docs_train,X_train],y_train,batch_size=32,epochs=10,verbose=1)
 
 	rnn_cnn.save("Data/models/rnn_cnn.hdf5")
-	with open('Data/trainHistory/rnn_cnn.pkl', 'wb') as file_pi:
+	with open('Data/train_history/rnn_cnn.pkl', 'wb') as file_pi:
 	    pickle.dump(model_dict["rnn_cnn"].history, file_pi)
 
+
+	exit(0)
 
 
 
@@ -287,23 +334,33 @@ if __name__ == "__main__":
 	rnn_cnn_hist = pickle.load(open("../data/pata/trainHistory/rnn_cnn.pkl","rb"))
 
 
-	def plot_metrics(model_dict,metric,x_label,y_label):
-    plots = 1
-    plt.figure(figsize=[15,10])
-    for model, history in model_dict.items():
-        plt.subplot(2,2,plots)
-        plt.plot(history[metric])
-        #plt.plot(history.history['val_acc'])
-        plt.title('{0} {1}'.format(model,metric))
-        plt.ylabel(y_label)
-        plt.xlabel(x_label)
-        plots += 1
-    #plt.legend(['train', 'test'], loc='upper left')
-    plt.tight_layout()
-    plt.savefig("Graphs/{}.png".format(metric),format="png")
-    plt.show()
-plt.style.use("ggplot")
-model_dict = {"mlp": mlp_hist,
-              "cnn": cnn_hist,
-              "rnn": rnn_hist,
-              "rnn_cnn": rnn_cnn_hist}
+	plt.style.use("ggplot")
+	model_dict = {"mlp": mlp_hist,
+	              "cnn": cnn_hist,
+	              "rnn": rnn_hist,
+	              "rnn_cnn": rnn_cnn_hist}
+
+	plot_metrics(model_dict,"acc","Epoch","Accuracy") ## Accuracy
+	plot_metrics(model_dict,"loss","Epoch","Loss") ## Loss
+	plot_metrics(model_dict,'auc_roc',"Epoch","AUC_ROC") ## AUC_ROC
+
+
+	mlp.evaluate([docs_test,X_test],y_test,batch_size=64)
+	cnn.evaluate([docs_test,X_test],y_test,batch_size=64)
+
+
+	rnn = load_model("Data/models/rnn.hdf5",custom_objects={"auc_roc":auc_roc})
+	rnn.evaluate([docs_test,X_test],y_test,batch_size=64)
+
+
+	rnn_cnn = load_model("Data/models/rnn_cnn.hdf5",custom_objects={"auc_roc":auc_roc})
+	rnn_cnn.evaluate([docs_test,X_test],y_test,batch_size=64)
+
+
+	#### Training for more epochs
+	history = rnn_cnn.fit(x = [docs_train,X_train],
+	                  y = y_train,
+	                  batch_size = 32,
+	                  epochs = 20,
+	                  verbose = 1,
+	                  validation_data = ([docs_test,X_test],y_test))
