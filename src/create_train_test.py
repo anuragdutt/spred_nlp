@@ -68,7 +68,7 @@ if __name__ == "__main__":
     parser.add_argument('--max_words', type=int, help="Max words considered for each 8k filing", default=34603)
     parser.add_argument('--embed_dim', type=int, help="Dimension of Embeddings", default="100")
     parser.add_argument('--embed-file', type=str, help="embedding location", default='../data/glove/glove.6B.100d.txt')
-    parser.add_argument('--filing-file', type=str, help="data for all sec filings", default="../data/embedded_data/sample_data.csv.gz")
+    parser.add_argument('--filing-file', type=str, help="data for all sec filings", default="../data/embedded_data/final_dataset.csv.gz")
     parser.add_argument('--sp-summary', type=str, help="save folder for all generated summary stats", default="../data/sumstats")
     parser.add_argument('--sp-pickles', type=str, help="save folder for all generated pickles", default="../data/pickles")
 
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     aux_shape = len(X.columns)
     X_train, X_test, y_train, y_test, docs_train, docs_test = train_test_split(X, y,docs,
                                                     stratify=y, 
-                                                    test_size=0.2,
+                                                    test_size=0.3,
                                                     random_state = 20)
 
 
@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
 
     fn_test = os.path.join(sp_pickles, 'test_input.pkl')
-    test_input = {'docs_test':docs_test, 'X_train':X_test, 'y_train':y_test}
+    test_input = {'docs_test':docs_test, 'X_train':X_test, 'ytrain':y_test}
     # test_input.to_pickle(fn_test)
     with open(fn_test, 'wb') as f:
         pickle.dump(test_input, f)   
