@@ -116,10 +116,12 @@ if __name__ == "__main__":
     keys = mod.metrics_names
     val = mod.evaluate([docs_test,X_test],y_test,batch_size=batch_size)
 
-    res_dat = pd.DataFrame('metric': keys, 'value': val)
+    res_dat = pd.DataFrame()
+    res_dat['metric']= keys 
+    res_dat['value']= val
     res_file = ''.join([mod_name,'_', str(batch_size), '_', str(num_epochs), '.csv'])
     res_path = os.path.join(sp_summary, res_file)
-    res.dat(res_path, index = False)
+    res_dat.to_csv(res_path, index = False)
     # cnn.evaluate([docs_test,X_test],y_test,batch_size=64)
 
 
