@@ -149,7 +149,7 @@ def build_model(output_classes,architecture,embedding_matrix,aux_shape,vocab_siz
     model = Model(inputs=[main_input, auxiliary_input], outputs=[main_output],name=architecture)
         
     #sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    # model = multi_gpu_model(model)
+    model = multi_gpu_model(model)
     model.compile('adam', 'categorical_crossentropy',metrics=['accuracy',auc_roc])
     
     return model
