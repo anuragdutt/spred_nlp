@@ -213,7 +213,7 @@ if __name__ == "__main__":
 	# print("******************************************************")
 
 	df = pd.read_csv("../data/embedded_data/main_data_3.csv.gz", compression = "gzip")
-	df = df.loc[:2000]
+	# df = df.loc[:2000]
 	# df.to_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip", index = False)
 	# df = pd.read_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip")
 	df = df.dropna()
