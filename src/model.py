@@ -314,9 +314,9 @@ if __name__ == "__main__":
     if mod_name in ["rnn", "cnn", "rnn_cnn"]:
         mod = build_model(3,mod_name, embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
         print(mod_name + ".......................................................")
-        model_fit = mod.fit([docs_train,X_train],y_train,batch_size=256,epochs=15,verbose=1)
+        model_fit = mod.fit([docs_train,X_train],y_train,batch_size=batch_size,epochs=num_epochs,verbose=1)
 
-        fn = ''.join([mod_name, '.hdf5'])
+        fn = ''.join([mod_name,'_', batch_size, '_', num_epochs, '.hdf5'])
         sp = os.path.join(save_path, fn)
 
         mod.save(sp)
