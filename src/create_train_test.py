@@ -179,7 +179,7 @@ if __name__ == "__main__":
     fn_y_test = os.path.join(sp_pickles, "y_test.pkl")
 
     y_train.to_pickle(fn_y_train)
-    y_test.to_pickle(fn_y_train) 
+    y_test.to_pickle(fn_y_test) 
 
     embedding_path = os.path.join(sp_pickles, "embedding_matrix.npy")
     np.save(embedding_path,embedding_matrix)
@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
 
     fn_test = os.path.join(sp_pickles, 'test_input.pkl')
-    test_input = {'docs_test':docs_test, 'X_train':X_test, 'y_train':y_test}
+    test_input = {'docs_test':docs_test, 'X_test':X_test, 'y_test':y_test}
     # test_input.to_pickle(fn_test)
     with open(fn_test, 'wb') as f:
         pickle.dump(test_input, f)   
