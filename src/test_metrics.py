@@ -63,6 +63,8 @@ if __name__ == "__main__":
     parser.add_argument('--sp-pickles', type=str, help="save folder for all generated pickles", default="../data/pickles")
     parser.add_argument('--sp-models', type=str, help="save folder for all generated models", default="../data/models")
     parser.add_argument('--sp-images', type=str, help="save folder for all graphs", default="../data/images")
+    parser.add_argument('--sp-summary', type=str, help="save folder for all generated summary stats", default="../data/sumstats")
+
 
     args = parser.parse_args()
 
@@ -72,6 +74,8 @@ if __name__ == "__main__":
     sp_pickles = args.sp_pickles
     sp_models = args.sp_models
     sp_images = args.sp_images
+    sp_summary = args.sp_summary
+
 
     fn_test = os.path.join(sp_pickles, "test_input.pkl")
     test = pickle.load(open(fn_test, 'rb'))
@@ -111,8 +115,11 @@ if __name__ == "__main__":
     
     keys = mod.metrics_names
     val = mod.evaluate([docs_test,X_test],y_test,batch_size=batch_size)
-    print(keys)
-    print(val)
+
+    res_dat = pd.DataFrame('metric': keys, 'value': val)
+    res_file = ''.join([mod_name,'_', str(batch_size), '_', str(num_epochs), '.csv'])
+    res_path = os.path.join(sp_summary, res_file)
+    res.dat(res_path, index = False)
     # cnn.evaluate([docs_test,X_test],y_test,batch_size=64)
 
 
