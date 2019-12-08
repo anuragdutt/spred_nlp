@@ -316,12 +316,12 @@ if __name__ == "__main__":
         print(mod_name + ".......................................................")
         model_fit = mod.fit([docs_train,X_train],y_train,batch_size=batch_size,epochs=num_epochs,verbose=1)
 
-        fn = ''.join([mod_name,'_', batch_size, '_', num_epochs, '.hdf5'])
-        sp = os.path.join(save_path, fn)
+        fn = ''.join([mod_name,'_', str(batch_size), '_', str(num_epochs), '.hdf5'])
+        sp = os.path.join(sp_model, fn)
 
         mod.save(sp)
     
-        model_pickle_file = ''.join([mod_name, ".pkl"])
+        model_pickle_file = ''.join([mod_name,'_', str(batch_size), '_', str(num_epochs), ".pkl"])
         model_pickle_path = os.path.join(sp_pickles, model_pickle_file)
 
         with open(model_pickle_path, 'wb') as file_pi:
