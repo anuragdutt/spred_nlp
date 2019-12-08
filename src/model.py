@@ -5,18 +5,14 @@ import pandas as pd
 import re
 import ast
 from tqdm import tqdm
-import matplotlib.pyplot as plt
-import seaborn as sns
 import gc
 import pickle
 import pandas
 
 import tensorflow as tf
 from keras.models import Sequential, Model, load_model
-from keras.preprocessing.sequence import pad_sequences
 from keras import backend as K
 from keras.optimizers import SGD
-from keras.preprocessing.text import Tokenizer
 from keras.layers import concatenate as lconcat
 from keras.layers import Dense, Dropout 
 from keras.layers import GRU, CuDNNGRU,Input, LSTM, Embedding, Bidirectional
@@ -44,44 +40,6 @@ import argparse
 
 
 
-def load_embeddings(vec_file):
-    print("Loading Glove Model")
-    f = open(vec_file,'r')
-    model = {}
-    for line in f:
-        splitLine = line.split()
-        word = splitLine[0]
-        embedding = np.array([float(val) for val in splitLine[1:]])
-        model[word] = embedding
-    print("Done. {} words loaded!".format(len(model)))
-    return model
-
-def tokenize_and_pad(docs,max_words=34603):
-    global t
-    t = Tokenizer()
-    t.fit_on_texts(docs)
-    docs = pad_sequences(sequences = t.texts_to_sequences(docs),maxlen = max_words, padding = 'post')
-    global vocab_size
-    vocab_size = len(t.word_index) + 1
-    
-    return docs
-
-def oversample(X,docs,y):
-    # Get number of rows with imbalanced class
-    target = y.sum().idxmax()
-    n = y[target].sum()
-    # identify imbalanced targets
-    imbalanced = y.drop(target,axis=1)
-    #For each target, create a dataframe of randomly sampled rows, append to list
-    append_list =  [y.loc[y[col]==1].sample(n=n-y[col].sum(),replace=True,random_state=20) for col in imbalanced.columns]
-    append_list.append(y)
-    y = pd.concat(append_list,axis=0)
-    # match y indexes on other inputs
-    X = X.loc[y.index]
-    docs = pd.DataFrame(docs_train,index=y_train.index).loc[y.index]
-    assert (y.index.all() == X.index.all() == docs.index.all())
-    return X,docs.values,y
-
 def auc_roc(y_true, y_pred):
     # any tensorflow metric
     value, update_op = tf.metrics.auc(y_true,y_pred)
@@ -98,6 +56,8 @@ def auc_roc(y_true, y_pred):
     with tf.control_dependencies([update_op]):
         value = tf.identity(value)
         return value
+
+
 
 def build_model(output_classes,architecture,embedding_matrix,aux_shape,vocab_size,embed_dim,max_seq_len):
     
@@ -151,22 +111,6 @@ def build_model(output_classes,architecture,embedding_matrix,aux_shape,vocab_siz
     model.compile('adam', 'categorical_crossentropy',metrics=['accuracy',auc_roc])
     
     return model
-
-def plot_metrics(model_dict,metric,x_label,y_label):
-    plots = 1
-    plt.figure(figsize=[15,10])
-    for model, history in model_dict.items():
-        plt.subplot(2,2,plots)
-        plt.plot(history[metric])
-        #plt.plot(history.history['val_acc'])
-        plt.title('{0} {1}'.format(model,metric))
-        plt.ylabel(y_label)
-        plt.xlabel(x_label)
-        plots += 1
-    #plt.legend(['train', 'test'], loc='upper left')
-    plt.tight_layout()
-    plt.savefig("Graphs/{}.png".format(metric),format="png")
-    plt.show()
     
 def gen():
     print('generator initiated')
@@ -231,7 +175,7 @@ if __name__ == "__main__":
         model_pickle_path = os.path.join(sp_pickles, model_pickle_file)
 
         with open(model_pickle_path, 'wb') as file_pi:
-            pickle.dump(model_fit, file_pi)
+            pickle.dump(model_fit.history, file_pi)
 
     else:
         print("Incorrect model name.................please try again")
