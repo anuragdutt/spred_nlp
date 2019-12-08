@@ -43,10 +43,6 @@ from sklearn.preprocessing import StandardScaler
 import argparse
 
 
-global aux_shape
-global vocab_size  
-global embed_dim
-global max_words
 
 def load_embeddings(vec_file):
     print("Loading Glove Model")
@@ -186,13 +182,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Train Model')
     parser.add_argument('--model', type=str, help="Model to be trained", default="rnn_cnn")
-    parser.add_argument('--max_words', type=int, help="Max words considered for each 8k filing", default=34603)
-    parser.add_argument('--embed_dim', type=int, help="Dimension of Embeddings", default="100")
     parser.add_argument('--batch-size', type=int, help="size of batch for training", default=32)
     parser.add_argument('--epochs', type=int, help="num epochs for training", default=15)
-    parser.add_argument('--embed-file', type=str, help="embedding location", default='../data/glove/glove.6B.100d.txt')
-    parser.add_argument('--filing-file', type=str, help="data for all sec filings", default="../data/embedded_data/sample_data.csv.gz")
-    parser.add_argument('--sp-summary', type=str, help="save folder for all generated summary stats", default="../data/sumstats")
     parser.add_argument('--sp-pickles', type=str, help="save folder for all generated pickles", default="../data/pickles")
     parser.add_argument('--sp-models', type=str, help="save folder for all generated models", default="../data/models")
 
@@ -200,116 +191,31 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     mod_name = args.model
-    max_words = args.max_words
-    embed_dim = args.embed_dim
     batch_size = args.batch_size
     num_epochs = args.epochs
-    embed_file = args.embed_file
-    filing_file = args.filing_file
-    sp_summary = args.sp_summary
     sp_pickles = args.sp_pickles
     sp_model = args.sp_models
 
-    wiki_url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
-    cik_df = pd.read_html(wiki_url,header=0,index_col=0)[0]
-    cik_df['GICS Sector'] = cik_df['GICS Sector'].astype("category")
-    cik_df['GICS Sub Industry'] = cik_df['GICS Sector'].astype("category")
 
-    cik_df = cik_df.loc[:, ['CIK', 'GICS Sector', 'GICS Sub Industry']]
-    cik_df.columns = ['cik', 'GICS Sector', 'GICS Sub Industry']
+    # model_dict = dict()
+    config = os.path.join(sp_pickles, 'config.pkl')
+    fn_train = os.path.join(sp_pickles, 'train_input.pkl')
+    # fn_test = os.path.join(sp_pickles, 'test_input.pkl')
 
-
-
-
-    # df = pd.read_pickle("../data/pickles/lemmatized_data.pickle")
-    # print("******************************************************")
-
-    df = pd.read_csv(filing_file, compression = "gzip")
-    # df = df.loc[:200]
-    # df.to_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip", index = False)
-    # df = pd.read_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip")
-    # exit(0)
-
-    df = df.dropna()
-    print(df.shape)
-    # exit(0)
-
-    df = pd.merge(df, cik_df, on = "cik", how = "left")
+    config = pickle.load(open(config, 'rb'))
+    train_dict = pickle.load(open(fn_train, 'rb'))
+    # test_dict = pickle.load(open(fn_test))
 
 
-    mlb = MultiLabelBinarizer()
-    df = df.join(pd.DataFrame(mlb.fit_transform(df.pop('items')),columns=mlb.classes_,),sort=False,how="left")
-    df_sumstats_path = os.path.join(sp_summary, "main_data.csv.gz")
-    df.to_csv(df_sumstats_path, compression = "gzip")
+    embedding_matrix = config['embedding_matrix']
+    aux_shape = config['aux_shape']
+    vocab_size = config['vocab_size']
+    embed_dim = config['embed_dim']
+    max_words = config['max_words']    
 
-    cols = ['GICS Sector','vix','rm_week','rm_month', 'rm_qtr', 'rm_year']
-    cols.extend(list(mlb.classes_))
-    X = df[cols]
-    docs = df['processed_text']
-    y = df['signal']    
-
-
-    # Get Dummies
-
-    docs = tokenize_and_pad(docs)
-    X = pd.get_dummies(columns = ['GICS Sector'],prefix="sector",data=X)
-    y = pd.get_dummies(columns=['signal'],data=y)
-
-
-    aux_shape = len(X.columns)
-    X_train, X_test, y_train, y_test, docs_train, docs_test = train_test_split(X, y,docs,
-                                                    stratify=y, 
-                                                    test_size=0.3,
-                                                    random_state = 20)
-
-
-    cont_features = ['vix','rm_week','rm_month', 'rm_qtr', 'rm_year']
-    aux_features = cont_features + [item for item in mlb.classes_]
-    x_scaler = StandardScaler()
-    X_train[cont_features] = x_scaler.fit_transform(X_train[cont_features])
-    X_test[cont_features] = x_scaler.transform(X_test[cont_features])
-
-    X_train, docs_train, y_train = oversample(X_train, docs_train, y_train)
-    embeddings_index = load_embeddings(embed_file)
-    words_not_found = []
-
-
-    embedding_matrix = np.zeros((vocab_size, embed_dim))
-    for word, i in t.word_index.items():
-        embedding_vector = embeddings_index.get(word)
-        if embedding_vector is not None:
-            # words not found in embedding index will be all-zeros.
-            embedding_matrix[i] = embedding_vector
-        else:
-            words_not_found.append(word)
-
-    print('number of null word embeddings: %d' % np.sum(np.sum(embedding_matrix, axis=1) == 0))
-
-
-
-    # Save data
-    fn_docs_train = os.path.join(sp_pickles, "docs_train.npy")
-    fn_docs_test = os.path.join(sp_pickles, "docs_test.npy")
-
-    np.save(fn_docs_train, docs_train)
-    np.save(fn_docs_test,docs_test)
-
-    fn_x_train = os.path.join(sp_pickles, "X_train.pkl")
-    fn_x_test = os.path.join(sp_pickles, "X_test.pkl")
-
-    X_train.to_pickle(fn_x_train)
-    X_test.to_pickle(fn_x_test)
-
-    fn_y_train = os.path.join(sp_pickles, "y_train.pkl")
-    fn_y_test = os.path.join(sp_pickles, "y_test.pkl")
-
-    y_train.to_pickle(fn_y_train)
-    y_test.to_pickle(fn_y_train) 
-
-    embedding_path = os.path.join(sp_pickles, "embedding_matrix.npy")
-    np.save(embedding_path,embedding_matrix)
-
-    model_dict = dict()
+    docs_train = train_dict['docs_train']
+    X_train = train_dict['X_train']
+    y_train = train_dict['y_train']
 
     if mod_name in ["rnn", "cnn", "rnn_cnn"]:
         mod = build_model(3,mod_name, embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
