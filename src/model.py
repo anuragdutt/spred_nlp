@@ -149,7 +149,7 @@ def build_model(output_classes,architecture,embedding_matrix,aux_shape,vocab_siz
     model = Model(inputs=[main_input, auxiliary_input], outputs=[main_output],name=architecture)
         
     #sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    model = multi_gpu_model(model)
+    # model = multi_gpu_model(model)
     model.compile('adam', 'categorical_crossentropy',metrics=['accuracy',auc_roc])
     
     return model
@@ -213,7 +213,7 @@ if __name__ == "__main__":
 	# print("******************************************************")
 
 	df = pd.read_csv("../data/embedded_data/main_data_3.csv.gz", compression = "gzip")
-	df = df.loc[:800]
+	df = df.loc[:1500]
 	# df.to_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip", index = False)
 	# df = pd.read_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip")
 	df = df.dropna()
@@ -286,13 +286,13 @@ if __name__ == "__main__":
 	model_dict = dict()
 
 
-	mlp = build_model(3,"mlp", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
-	print("mlp.......................................................")
-	model_dict["mlp"] = mlp.fit([docs_train,X_train],y_train,batch_size=64, epochs=10,verbose=1) 
+	# mlp = build_model(3,"mlp", embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
+	# print("mlp.......................................................")
+	# model_dict["mlp"] = mlp.fit([docs_train,X_train],y_train,batch_size=64, epochs=10,verbose=1) 
 
-	mlp.save("../data/models/mlp.hdf5")
-	# with open('../data/train_history/mlp.pkl', 'wb') as file_pi:
-	    # pickle.dump(model_dict["mlp"], file_pi)
+	# mlp.save("../data/models/mlp.hdf5")
+	# # with open('../data/train_history/mlp.pkl', 'wb') as file_pi:
+	#     # pickle.dump(model_dict["mlp"], file_pi)
 
 
 
