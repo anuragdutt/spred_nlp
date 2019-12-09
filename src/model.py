@@ -133,7 +133,7 @@ if __name__ == "__main__":
     parser.add_argument('--sp-pickles', type=str, help="save folder for all generated pickles", default="../data/pickles")
     parser.add_argument('--sp-models', type=str, help="save folder for all generated models", default="../data/models")
     parser.add_argument('--sp-models', type=str, help="save folder for all generated models", default="../data/models")
-    parser.add_argument('--multi_gpu', type=bool, help="Toggle to enable usage of multi-gpu", default=0)
+    parser.add_argument('--multi-gpu', type=bool, help="Toggle to enable usage of multi-gpu", default=0)
 
 
     args = parser.parse_args()
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     num_epochs = args.epochs
     sp_pickles = args.sp_pickles
     sp_model = args.sp_models
-
+    multi_gpu = args.multi_gpu
 
     # model_dict = dict()
     config = os.path.join(sp_pickles, 'config.pkl')
