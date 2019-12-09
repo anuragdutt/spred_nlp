@@ -71,12 +71,12 @@ def build_model(output_classes,architecture,embedding_matrix,aux_shape,vocab_siz
 
     if architecture == 'mlp':
         # Densely Connected Neural Network (Multi-Layer Perceptron)
-        main = Dense(32, activation='sigmoid')(main)
+        main = Dense(32, activation='relu')(main)
         main = Dropout(0.2)(main)
         main = Flatten()(main)
     elif architecture == 'cnn':
         # 1-D Convolutional Neural Network
-        main = Conv1D(64, 3, strides=1, padding='same', activation='relu')(main)
+        main = Conv1D(64, 3, strides=1, padding='same', activation='        ')(main)
         #Cuts the size of the output in half, maxing over every 2 inputs
         main = MaxPooling1D(pool_size=3)(main)
         main = Dropout(0.2)(main)
