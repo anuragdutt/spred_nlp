@@ -16,8 +16,8 @@ import random
 if __name__ == "__main__":
 
 	df = pd.read_csv("../data/embedded_data/final_dataset.csv.gz", compression = "gzip")
-	df = df.ix[random.sample(df.index, 3000)]
-	df.to_csv("../data/embedded_data/sample_data.csv.gz", compression = "gzip", index = False)
+	df = df.ix[random.sample(df.index.tolist(), 3000)]
+	df.to_csv("../data/embedded_data/sample_data_mlp1.csv.gz", compression = "gzip", index = False)
 	# df = pd.read_csv("../data/embedded_data/sample_data_mlp.csv.gz", compression = "gzip")
 	# df = df.dropna()
 	print(df.shape)
