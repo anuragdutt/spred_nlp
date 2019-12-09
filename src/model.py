@@ -132,7 +132,6 @@ if __name__ == "__main__":
     parser.add_argument('--epochs', type=int, help="num epochs for training", default=15)
     parser.add_argument('--sp-pickles', type=str, help="save folder for all generated pickles", default="../data/pickles")
     parser.add_argument('--sp-models', type=str, help="save folder for all generated models", default="../data/models")
-    parser.add_argument('--sp-models', type=str, help="save folder for all generated models", default="../data/models")
     parser.add_argument('--multi-gpu', type=bool, help="Toggle to enable usage of multi-gpu", default=0)
 
 
