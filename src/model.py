@@ -59,7 +59,7 @@ def auc_roc(y_true, y_pred):
 
 
 
-def build_model(output_classes,architecture,embedding_matrix,aux_shape,vocab_size,embed_dim,max_seq_len):
+def build_model(output_classes,architecture,embedding_matrix,aux_shape,vocab_size,embed_dim,max_seq_len,multi_gpu):
     
     with tf.device('/cpu:0'):
         main_input= Input(shape=(max_seq_len,),name='doc_input')
@@ -107,7 +107,8 @@ def build_model(output_classes,architecture,embedding_matrix,aux_shape,vocab_siz
     model = Model(inputs=[main_input, auxiliary_input], outputs=[main_output],name=architecture)
         
     #sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    # model = multi_gpu_model(model)
+    if multi_gpu:
+        model = multi_gpu_model(model)
     model.compile('adam', 'categorical_crossentropy',metrics=['accuracy',auc_roc])
     
     return model
@@ -130,6 +131,8 @@ if __name__ == "__main__":
     parser.add_argument('--epochs', type=int, help="num epochs for training", default=15)
     parser.add_argument('--sp-pickles', type=str, help="save folder for all generated pickles", default="../data/pickles")
     parser.add_argument('--sp-models', type=str, help="save folder for all generated models", default="../data/models")
+    parser.add_argument('--sp-models', type=str, help="save folder for all generated models", default="../data/models")
+    parser.add_argument('--multi_gpu', type=bool, help="Toggle to enable usage of multi-gpu", default=0)
 
 
     args = parser.parse_args()
@@ -162,7 +165,7 @@ if __name__ == "__main__":
     y_train = train_dict['y_train']
 
     if mod_name in ["rnn", "cnn", "rnn_cnn"]:
-        mod = build_model(3,mod_name, embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words)
+        mod = build_model(3,mod_name, embedding_matrix = embedding_matrix, aux_shape = aux_shape, vocab_size = vocab_size, embed_dim = embed_dim, max_seq_len = max_words, multi_gpu = multi_gpu)
         print(mod_name + ".......................................................")
         model_fit = mod.fit([docs_train,X_train],y_train,batch_size=batch_size,epochs=num_epochs,verbose=1)
 
