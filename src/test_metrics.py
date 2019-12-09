@@ -91,7 +91,7 @@ if __name__ == "__main__":
     if os.path.isfile(mod_path) and os.path.isfile(mod_pickle_path):    
         mod_hist = pickle.load(open(mod_pickle_path,"rb"))
     else:
-        print("Model configuration ", + " doesn't exist. Please try a different configuration or build the model first")
+        print("Model configuration doesn't exist. Please try a different configuration or build the model first")
         exit(0)
     # cnn_hist = pickle.load(open("../data/pickles/cnn.pkl","rb"))
     # rnn_hist = pickle.load(open("../data/pickles/rnn.pkl","rb"))
@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
 
     plt.style.use("ggplot")
-    model_dict = {"model": mod_hist}
+    model_dict = {"model": mod_hist}    
 
     img_acc = ''.join([mod_name,'_', str(batch_size), '_', str(num_epochs), '_accuracy.png'])
     ip_acc = os.path.join(sp_images, img_acc)
