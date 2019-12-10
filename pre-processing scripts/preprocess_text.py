@@ -7,9 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/1RHu9BGW_R98bHB1UKeHr9jtUEBIWOhyQ
 """
 
-"""
-Code to do pre-processing on the 8K filings to remove stop words
-"""
 
 
 import pandas as pd 
