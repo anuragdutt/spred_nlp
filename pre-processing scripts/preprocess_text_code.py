@@ -7,6 +7,12 @@ Original file is located at
     https://colab.research.google.com/drive/1RHu9BGW_R98bHB1UKeHr9jtUEBIWOhyQ
 """
 
+"""
+Pre-processing using vectorised libraries
+
+"""
+
+
 import pandas as pd 
 import nltk 
 from nltk.corpus import stopwords 

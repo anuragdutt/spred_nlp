@@ -9,6 +9,8 @@ Original file is located at
 """
 Code to do pre-processing of the 8-k files 
 there are 477 companies
+The companies have been extracted from the govt website
+It is based on the paper by Dan Jurafsky
 
 """
 
